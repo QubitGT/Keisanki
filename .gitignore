@@ -1,0 +1,10 @@
+pscp.exe
+*.bat
+node_modules/
+.env
+*.db
+votes.json
+serverdata.json
+playerids.txt
+bannedids.txt
+package-lock.json
