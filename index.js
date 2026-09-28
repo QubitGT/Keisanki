@@ -1547,7 +1547,7 @@ const sabaa = tsuushin.createServer(async (request, response) => {
         } else if (request.method === 'GET' && request.url === '/pt') {
             response.writeHead(501).end(JSON.stringify({ status: 501 }));
         } else if (request.method === 'GET' && (request.url === "/" || request.url === "")) {
-            response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ status: 200, message: "これはAPIです。ウェブサイトのように閲覧することはできません。ii's Stupid Menuの管理者およびフレンドシステムに使用されています。詳細については https://github.com/QubitGT/iis.Stupid.Menu をご覧ください。" }));
+            response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ status: 200, message: "これはAPIです。ウェブサイトのように閲覧することはできません。ii's Stupid Menuの管理者およびフレンドシステムに使用されています。詳細については https://github.com/QubitGT/Keisanku をご覧ください。" }));
         } else {
             response.writeHead(404, { 'Content-Type': 'application/json' }).end(JSON.stringify({ status: 404 }));
         }
