@@ -23,23 +23,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 require('dotenv').config();
 
-const tsuushin = require('http');
-const angouTsuushin = require('https');
+const http = require('http');
+const https = require('https');
 const fairu = require('fs').promises;
-const sokettoTeigi = require('ws');
-const angou = require('crypto');
+const ws = require('ws');
+const crypto = require('crypto');
 const { exec: jikkou, execFile: fairuJikkou } = require('child_process');
-const furaito = require('flite');
-const hanyou = require('util');
+const util = require('util');
 const deetabeesuKiban = require("sqlite3").verbose();
 
-const jikkouYakusoku = hanyou.promisify(jikkou);
-const fairuJikkouYakusoku = hanyou.promisify(fairuJikkou);
+const jikkouYakusoku = util.promisify(jikkou);
+const fairuJikkouYakusoku = util.promisify(fairuJikkou);
 
 const deetabeesu = new deetabeesuKiban.Database(process.env.DB_PATH || './records.db');
-const deetabeesuShutoku = hanyou.promisify(deetabeesu.get.bind(deetabeesu));
-const deetabeesuZenshutoku = hanyou.promisify(deetabeesu.all.bind(deetabeesu));
-const deetabeesuJikkou = hanyou.promisify(deetabeesu.run.bind(deetabeesu));
+const deetabeesuShutoku = util.promisify(deetabeesu.get.bind(deetabeesu));
+const deetabeesuZenshutoku = util.promisify(deetabeesu.all.bind(deetabeesu));
+const deetabeesuJikkou = util.promisify(deetabeesu.run.bind(deetabeesu));
 
 deetabeesu.configure("busyTimeout", 1000);
 deetabeesu.on('profile', (sql, time) => {
@@ -312,7 +311,7 @@ function touhyousuuShutoku() {
 }
 
 function ipHasshuka(ipAddress) { // TODO: ソルトを追加
-    const hasshuChi = angou.createHmac('sha256', hasshuKagi).update(ipAddress).digest();
+    const hasshuChi = crypto.createHmac('sha256', hasshuKagi).update(ipAddress).digest();
     return hasshuChi.toString('hex');
 }
 
@@ -561,7 +560,7 @@ function disukoodoSoushin(data) {
         const webhookDeeta = JSON.stringify({ content: naiyou });
         const urlJouhou = new URL(disukoodoWebhookAdoresu);
         const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': webhookDeeta.length } };
-        const request = angouTsuushin.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
+        const request = https.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
         request.on('error', error => console.error(`Webhook送信中にエラーが発生しました: ${error.message}`));
         request.write(webhookDeeta);
         request.end();
@@ -582,7 +581,7 @@ function doukiWebhookSoushin(room, hakkenUid, hakkenCosme, renketsuMojiretsu, ha
         const webhookDeeta = JSON.stringify({ content: naiyou });
         const urlJouhou = new URL(doukiWebhookAdoresu);
         const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': webhookDeeta.length } };
-        const request = angouTsuushin.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
+        const request = https.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
         request.on('error', error => console.error(`Webhook送信中にエラーが発生しました: ${error.message}`));
         request.write(webhookDeeta);
         request.end();
@@ -600,7 +599,7 @@ function doukiWebhookIdSoushin(room, hakkenUid, hakkenUser, hakkenNickname, iro,
         const webhookDeeta = JSON.stringify({ content: naiyou });
         const urlJouhou = new URL(doukiWebhookAdoresu);
         const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': webhookDeeta.length } };
-        const request = angouTsuushin.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
+        const request = https.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
         request.on('error', error => console.error(`Webhook送信中にエラーが発生しました: ${error.message}`));
         request.write(webhookDeeta);
         request.end();
@@ -638,8 +637,8 @@ async function kyasshuKakidashi() {
                 nickname = excluded.nickname, cosmetics = excluded.cosmetics, color = excluded.color,
                 platform = excluded.platform, timestamp = excluded.timestamp, raw_json = excluded.raw_json
         `);
-        const statementJikkou = hanyou.promisify(statement.run.bind(statement));
-        const statementShuuryou = hanyou.promisify(statement.finalize.bind(statement));
+        const statementJikkou = util.promisify(statement.run.bind(statement));
+        const statementShuuryou = util.promisify(statement.finalize.bind(statement));
 
         try {
             await deetabeesuJikkou("BEGIN TRANSACTION");
@@ -777,8 +776,8 @@ async function yuuzaaDeetaKakidashi() {
                 userid = excluded.userid,
                 last_seen = excluded.last_seen
         `);
-        const statementJikkou = hanyou.promisify(statement.run.bind(statement));
-        const statementShuuryou = hanyou.promisify(statement.finalize.bind(statement));
+        const statementJikkou = util.promisify(statement.run.bind(statement));
+        const statementShuuryou = util.promisify(statement.finalize.bind(statement));
 
         await deetabeesuJikkou("BEGIN TRANSACTION");
         for (const entry of kakidashiTaishouQueue) {
@@ -1149,7 +1148,7 @@ function requestHonbunShutoku(request, saidaiBytes = 12 * 1024) {
     });
 }
 
-const sabaa = tsuushin.createServer(async (request, response) => {
+const sabaa = http.createServer(async (request, response) => {
     try {
         const clientIp = request.headers['cf-connecting-ip'] || request.socket.remoteAddress;
         const ipHash = ipHasshuka(clientIp);
@@ -1300,9 +1299,9 @@ const sabaa = tsuushin.createServer(async (request, response) => {
                     const j = Math.floor(Math.random() * (i + 1));
                     [sockets[i], sockets[j]] = [sockets[j], sockets[i]];
                 }
-                sockets.slice(0, data.count).forEach(socket => socket.readyState === sokettoTeigi.OPEN && socket.send(message));
+                sockets.slice(0, data.count).forEach(socket => socket.readyState === ws.OPEN && socket.send(message));
             } else {
-                sockets.forEach(socket => socket.readyState === sokettoTeigi.OPEN && socket.send(message));
+                sockets.forEach(socket => socket.readyState === ws.OPEN && socket.send(message));
             }
             response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ status: 200 }));
         } else if (request.method === 'POST' && request.url === '/blacklistid') {
@@ -1363,7 +1362,7 @@ const sabaa = tsuushin.createServer(async (request, response) => {
                     return;
                 }
 
-                const shutsuryokuPasu = `/tmp/tts_${angou.randomBytes(2).toString('hex')}.wav`;
+                const shutsuryokuPasu = `/tmp/tts_${crypto.randomBytes(2).toString('hex')}.wav`;
 
                 await fairuJikkouYakusoku('flite', ['-t', text, '-o', shutsuryokuPasu]);
                 const onseiDeeta = await fairu.readFile(shutsuryokuPasu);
@@ -1559,14 +1558,14 @@ const sabaa = tsuushin.createServer(async (request, response) => {
     }
 });
 
-const sokettoSabaa = new sokettoTeigi.Server({ server: sabaa });
+const sokettoSabaa = new ws.Server({ server: sabaa });
 const sokettoKankaku = {};
 let setsuzokuchuuClient = new Map();
 const sankaKankaku = {};
 
 function onlineHantei(ipHash) {
     const socket = setsuzokuchuuClient.get(ipHash);
-    return socket && socket.readyState === sokettoTeigi.OPEN;
+    return socket && socket.readyState === ws.OPEN;
 }
 
 sokettoSabaa.on('connection', (socket, request) => {
@@ -1620,7 +1619,7 @@ sokettoSabaa.on('connection', (socket, request) => {
             }
 
             const taishouSocket = setsuzokuchuuClient.get(taishouHash);
-            if (!taishouSocket || taishouSocket.readyState !== sokettoTeigi.OPEN) {
+            if (!taishouSocket || taishouSocket.readyState !== ws.OPEN) {
                 console.log(`対象 ${taishouHash} はオンラインではありません`);
                 return;
             }
@@ -1702,10 +1701,10 @@ sokettoSabaa.on('connection', (socket, request) => {
     });
 });
 
-const portBangou = process.env.PORT || 8080;
+const port = process.env.PORT || 8080;
 shokika().then(() => {
-    sabaa.listen(portBangou, () => {
-        console.log(`サーバーが http://localhost:${portBangou}/ で起動しました`);
+    sabaa.listen(port, () => {
+        console.log(`サーバーが http://localhost:${port}/ で起動しました`);
     });
 }).catch(error => {
     console.error("サーバーの初期化に失敗しました:", error);
