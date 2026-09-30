@@ -48,9 +48,9 @@ deetabeesu.on('profile', (sql, time) => {
 });
 
 let banzumiIdIchiran = [];
-let disukoodoWebhookAdoresu = process.env.DISCORD_WEBHOOK_URL || '';
-let doukiWebhookAdoresu = process.env.SYNCDATA_WEBHOOK_URL || '';
-let banDeetaWebhookAdoresu = process.env.BANDATA_WEBHOOK_URL || '';
+let discordWebhook = process.env.DISCORD_WEBHOOK_URL || ''; // 接続を受信しました
+let syncWebhook = process.env.SYNCDATA_WEBHOOK_URL || ''; // を発見
+let banWebhook = process.env.BANDATA_WEBHOOK_URL || ''; // Not use
 let himitsuKagi = process.env.SECRET_KEY || '';
 let hasshuKagi = process.env.HASH_KEY || '';
 let touhyouDeeta = { "a-votes": [], "b-votes": [] };
@@ -117,19 +117,19 @@ async function furendoKakunin(userHash, friendHash) {
 }
 
 async function shokika() {
-    if (disukoodoWebhookAdoresu) {
+    if (discordWebhook) {
         console.log('Webhookを設定しました');
     } else {
         console.log('Webhookが設定されていません。');
     }
 
-    if (doukiWebhookAdoresu) {
+    if (syncWebhook) {
         console.log('Syncwebhookを設定しました');
     } else {
         console.log('Syncwebhookが設定されていません。');
     }
 
-    if (banDeetaWebhookAdoresu) {
+    if (banWebhook) {
         console.log('Banwebhookを設定しました');
     } else {
         console.log('Banwebhookが設定されていません。');
@@ -319,14 +319,17 @@ const shokiSabaaDeetaNaiyou = { admins: [], patreon: [], poll: null, "option-a":
 
 // serverdata.json を読み込む。存在しない場合はデフォルト内容で新規作成する
 async function serverdataYomikomi() {
+    let namaDeeta;
     try {
-        const namaDeeta = await fairu.readFile("./serverdata.json", "utf8");
-        return JSON.parse(namaDeeta);
+        namaDeeta = await fairu.readFile("./serverdata.json", "utf8");
     } catch (e) {
+        if (e.code !== 'ENOENT') throw e;
         console.log('serverdata.jsonが見つかりません。デフォルト内容で新規作成します。');
         await fairu.writeFile("./serverdata.json", JSON.stringify(shokiSabaaDeetaNaiyou, null, 2), "utf8");
         return { ...shokiSabaaDeetaNaiyou };
     }
+    // 壊れたJSONの場合は上書きせずエラーにする（手動編集を消さないため）
+    return JSON.parse(namaDeeta);
 }
 
 async function sabaaDeetaKoushin() {
@@ -558,7 +561,7 @@ function disukoodoSoushin(data) {
         let naiyou = doukiTsuikaMojiretsu1 ? `${taishouText}\n\n${doukiTsuikaMojiretsu1}` : taishouText;
         doukiTsuikaMojiretsu1 = "";
         const webhookDeeta = JSON.stringify({ content: naiyou });
-        const urlJouhou = new URL(disukoodoWebhookAdoresu);
+        const urlJouhou = new URL(discordWebhook);
         const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': webhookDeeta.length } };
         const request = https.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
         request.on('error', error => console.error(`Webhook送信中にエラーが発生しました: ${error.message}`));
@@ -579,7 +582,7 @@ function doukiWebhookSoushin(room, hakkenUid, hakkenCosme, renketsuMojiretsu, ha
         let naiyou = doukiTsuikaMojiretsu2 ? `${taishouText}\n\n${doukiTsuikaMojiretsu2}` : taishouText;
         doukiTsuikaMojiretsu2 = "";
         const webhookDeeta = JSON.stringify({ content: naiyou });
-        const urlJouhou = new URL(doukiWebhookAdoresu);
+        const urlJouhou = new URL(syncWebhook);
         const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': webhookDeeta.length } };
         const request = https.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
         request.on('error', error => console.error(`Webhook送信中にエラーが発生しました: ${error.message}`));
@@ -597,7 +600,7 @@ function doukiWebhookIdSoushin(room, hakkenUid, hakkenUser, hakkenNickname, iro,
         let naiyou = doukiTsuikaMojiretsu2 ? `${taishouText}\n\n${doukiTsuikaMojiretsu2}` : taishouText;
         doukiTsuikaMojiretsu2 = "";
         const webhookDeeta = JSON.stringify({ content: naiyou });
-        const urlJouhou = new URL(doukiWebhookAdoresu);
+        const urlJouhou = new URL(syncWebhook);
         const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': webhookDeeta.length } };
         const request = https.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
         request.on('error', error => console.error(`Webhook送信中にエラーが発生しました: ${error.message}`));
