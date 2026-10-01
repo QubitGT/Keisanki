@@ -28,7 +28,7 @@ const https = require('https');
 const fairu = require('fs').promises;
 const ws = require('ws');
 const crypto = require('crypto');
-const { exec: jikkou, execFile: fairuJikkou } = require('child_process');
+const { exec: jikkou, execFile: fairuJikkou, spawn: kogoSeisei } = require('child_process');
 const util = require('util');
 const deetabeesuKiban = require("sqlite3").verbose();
 
@@ -1341,6 +1341,33 @@ const sabaa = http.createServer(async (request, response) => {
             let seikou = false;
             seikou = await patoronSakujo(data.id);
             response.writeHead(seikou ? 200 : 400).end(JSON.stringify({ status: seikou ? 200 : 400 }));
+        } else if (request.method === 'GET' && request.url === '/status') {
+            response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({
+                commit: kidouJiKomitto, uptime_seconds: Math.floor(process.uptime())
+            }));
+        } else if (request.method === 'POST' && request.url === '/restart') {
+            const data = await requestHonbunShutoku(request);
+            // SECRET_KEY が未設定の場合は誰でも再起動できてしまうため拒否する
+            if (!himitsuKagi || data.key !== himitsuKagi) { response.writeHead(401).end(JSON.stringify({ status: 401 })); return; }
+            response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ status: 200 }), () => {
+                koushinKakunin().catch(e => console.error('更新の確認に失敗しました:', e.message)).finally(sabaaSaikidou);
+            });
+        } else if (request.method === 'POST' && request.url === '/setserverdata') {
+            const data = await requestHonbunShutoku(request, 256 * 1024);
+            if (!himitsuKagi || data.key !== himitsuKagi) { response.writeHead(401).end(JSON.stringify({ status: 401 })); return; }
+            // data はオブジェクト、またはJSON文字列のどちらでも受け付ける
+            let atarashiiDeeta = data.data;
+            try {
+                if (typeof atarashiiDeeta === 'string') atarashiiDeeta = JSON.parse(atarashiiDeeta);
+            } catch (e) {
+                response.writeHead(400).end(JSON.stringify({ status: 400, error: "dataが有効なJSONではありません: " + e.message })); return;
+            }
+            if (!atarashiiDeeta || typeof atarashiiDeeta !== 'object' || Array.isArray(atarashiiDeeta)) {
+                response.writeHead(400).end(JSON.stringify({ status: 400, error: "dataはJSONオブジェクトである必要があります" })); return;
+            }
+            await fairu.writeFile("./serverdata.json", JSON.stringify(atarashiiDeeta, null, 2), "utf8");
+            await sabaaDeetaKoushin();
+            response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ status: 200 }));
         } else if (request.method === 'GET' && request.url === '/getblacklisted') {
             const data = await requestHonbunShutoku(request);
             if (data.key !== himitsuKagi) { response.writeHead(401).end(JSON.stringify({ status: 401 })); return; }
@@ -1703,6 +1730,64 @@ sokettoSabaa.on('connection', (socket, request) => {
         console.error(`WebSocketエラー (${ipHash}):`, error.message);
     });
 });
+
+// ---- 自動更新 / 再起動 ----
+let saikidouchuuFlag = false;
+let koushinKakuninchuuFlag = false;
+
+const gitJikkou = async (...args) => (await fairuJikkouYakusoku('git', args, { cwd: __dirname })).stdout.trim();
+
+// 起動時点のコミット（再起動のたびに更新される）
+let kidouJiKomitto = 'unknown';
+gitJikkou('rev-parse', '--short', 'HEAD').then(h => { kidouJiKomitto = h; }).catch(() => {});
+
+// 上流に新しいコミットがあれば pull する。pull した場合は true を返す
+async function koushinKakunin() {
+    if (koushinKakuninchuuFlag || saikidouchuuFlag) return false;
+    koushinKakuninchuuFlag = true;
+    try {
+        await gitJikkou('fetch', '--quiet');
+        if (parseInt(await gitJikkou('rev-list', '--count', 'HEAD..@{u}'), 10) === 0) return false;
+        const henkouFairu = (await gitJikkou('diff', '--name-only', 'HEAD', '@{u}')).split('\n');
+        await gitJikkou('pull', '--ff-only', '--quiet');
+        console.log('更新を取得しました');
+        if (henkouFairu.includes('package.json')) {
+            console.log('package.jsonが変更されたため npm install を実行します');
+            await jikkouYakusoku('npm install', { cwd: __dirname });
+        }
+        return true;
+    } finally {
+        koushinKakuninchuuFlag = false;
+    }
+}
+
+// データを書き出し、ポートを解放してから同じ引数で新しいプロセスを起動し、自分は終了する
+async function sabaaSaikidou() {
+    if (saikidouchuuFlag) return;
+    saikidouchuuFlag = true;
+    console.log('サーバーを再起動します');
+    try {
+        await Promise.all([kyasshuKakidashi(), yuuzaaDeetaKakidashi()]);
+    } catch (e) {
+        console.error('再起動前の書き出しに失敗しました:', e.message);
+    }
+    sokettoSabaa.clients.forEach(client => client.terminate());
+    sabaa.close(() => {
+        kogoSeisei(process.execPath, [...process.execArgv, ...process.argv.slice(1)], {
+            cwd: process.cwd(), detached: true, stdio: 'inherit'
+        }).unref();
+        process.exit(0);
+    });
+    sabaa.closeAllConnections();
+}
+
+setInterval(async () => {
+    try {
+        if (await koushinKakunin()) await sabaaSaikidou();
+    } catch (e) {
+        console.error('更新の確認に失敗しました:', e.message);
+    }
+}, 60000);
 
 const port = process.env.PORT || 8080;
 shokika().then(() => {
