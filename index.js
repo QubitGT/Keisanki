@@ -32,6 +32,25 @@ const { exec: jikkou, execFile: fairuJikkou, spawn: kogoSeisei } = require('chil
 const util = require('util');
 const deetabeesuKiban = require("sqlite3").verbose();
 
+// ログにも実行ディレクトリやユーザー名が出ないように伏せる
+{
+    const os = require('os');
+    const himitsuMojiretsu = new Set([__dirname, process.cwd(), os.homedir()]);
+    let yuuzaaMei = '';
+    try { yuuzaaMei = os.userInfo().username; } catch {}
+    const yuuzaaSei = yuuzaaMei && yuuzaaMei !== 'root'
+        ? new RegExp(`(?<![A-Za-z0-9_-])${yuuzaaMei.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9_-])`, 'g') : null;
+    const himitsuJun = [...himitsuMojiretsu].filter(s => s && s !== '/' && s.length > 1).sort((a, b) => b.length - a.length);
+    const fuseru = s => {
+        for (const h of himitsuJun) s = s.split(h).join('[path]');
+        return yuuzaaSei ? s.replace(yuuzaaSei, '[user]') : s;
+    };
+    for (const m of ['log', 'info', 'warn', 'error']) {
+        const moto = console[m].bind(console);
+        console[m] = (...args) => moto(fuseru(util.format(...args)));
+    }
+}
+
 const jikkouYakusoku = util.promisify(jikkou);
 const fairuJikkouYakusoku = util.promisify(fairuJikkou);
 
@@ -1583,7 +1602,7 @@ const sabaa = http.createServer(async (request, response) => {
     } catch (error) {
         console.error('リクエスト処理中にエラーが発生しました:', error.message);
         if (!response.headersSent) {
-            response.writeHead(500, { 'Content-Type': 'application/json' }).end(JSON.stringify({ status: 500, error: error.message }));
+            response.writeHead(500, { 'Content-Type': 'application/json' }).end(JSON.stringify({ status: 500, error: "サーバー内部エラーです。" }));
         }
     }
 });
@@ -1739,7 +1758,7 @@ const gitJikkou = async (...args) => (await fairuJikkouYakusoku('git', args, { c
 
 // 起動時点のコミット（再起動のたびに更新される）
 let kidouJiKomitto = 'unknown';
-gitJikkou('rev-parse', '--short', 'HEAD').then(h => { kidouJiKomitto = h; }).catch(() => {});
+gitJikkou('rev-parse', '--short', 'HEAD').then(h => { kidouJiKomitto = h; }).catch(e => console.error('コミットの取得に失敗しました:', e.message));
 
 // 上流に新しいコミットがあれば pull する。pull した場合は true を返す
 async function koushinKakunin() {
