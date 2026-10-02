@@ -1360,6 +1360,9 @@ const sabaa = http.createServer(async (request, response) => {
             let seikou = false;
             seikou = await patoronSakujo(data.id);
             response.writeHead(seikou ? 200 : 400).end(JSON.stringify({ status: seikou ? 200 : 400 }));
+        } else if (request.method === 'GET' && request.url === '/license') {
+            const raisensu = await fairu.readFile(require('path').join(__dirname, 'LICENSE'), 'utf8');
+            response.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' }).end(raisensu);
         } else if (request.method === 'GET' && request.url === '/status') {
             response.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({
                 commit: kidouJiKomitto, uptime_seconds: Math.floor(process.uptime())
