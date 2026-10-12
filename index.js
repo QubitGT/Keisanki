@@ -581,7 +581,7 @@ function disukoodoSoushin(data) {
         doukiTsuikaMojiretsu1 = "";
         const webhookDeeta = JSON.stringify({ content: naiyou });
         const urlJouhou = new URL(discordWebhook);
-        const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': webhookDeeta.length } };
+        const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(webhookDeeta) } };
         const request = https.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
         request.on('error', error => console.error(`Webhook送信中にエラーが発生しました: ${error.message}`));
         request.write(webhookDeeta);
@@ -602,7 +602,7 @@ function doukiWebhookSoushin(room, hakkenUid, hakkenCosme, renketsuMojiretsu, ha
         doukiTsuikaMojiretsu2 = "";
         const webhookDeeta = JSON.stringify({ content: naiyou });
         const urlJouhou = new URL(syncWebhook);
-        const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': webhookDeeta.length } };
+        const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(webhookDeeta) } };
         const request = https.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
         request.on('error', error => console.error(`Webhook送信中にエラーが発生しました: ${error.message}`));
         request.write(webhookDeeta);
@@ -620,7 +620,7 @@ function doukiWebhookIdSoushin(room, hakkenUid, hakkenUser, hakkenNickname, iro,
         doukiTsuikaMojiretsu2 = "";
         const webhookDeeta = JSON.stringify({ content: naiyou });
         const urlJouhou = new URL(syncWebhook);
-        const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': webhookDeeta.length } };
+        const requestOption = { hostname: urlJouhou.hostname, path: urlJouhou.pathname + urlJouhou.search, method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(webhookDeeta) } };
         const request = https.request(requestOption, response => response.on('data', chunk => console.log(`応答: ${chunk.toString()}`)));
         request.on('error', error => console.error(`Webhook送信中にエラーが発生しました: ${error.message}`));
         request.write(webhookDeeta);
