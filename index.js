@@ -572,7 +572,7 @@ function disukoodoSoushin(data) {
     if (idMukouHantei(data.userid))
         return;
 
-    const taishouText = `新しい接続を受信しました\n> ルームデータ: \`${data.directory}\` \`${data.region}\` \`${data.gameMode}\` \`${data.isPrivate ? "公開" : "非公開"}\` \`${data.playerCount.toString()} 人\`\n> ユーザーデータ: \`${data.identity}\` \`${data.userid}\` \`コンソール ${data.consoleVersion}\` \`${data.menuName} ${data.menuVersion}\``;
+    const taishouText = `New Connection Received/新しい接続を受信しました\n> Room Data/ルームデータ: \`${data.directory}\` \`${data.region}\` \`${data.gameMode}\` \`${data.isPrivate ? "Public/公開" : "Private/非公開"}\` \`${data.playerCount.toString()} Players/人\`\n> User Data/ユーザーデータ: \`${data.identity}\` \`${data.userid}\` \`Console/コンソール ${data.consoleVersion}\` \`${data.menuName} ${data.menuVersion}\``;
     if (Date.now() - doukiSoushinKankaku1 < 5000) {
         doukiTsuikaMojiretsu1 += taishouText + "\n\n";
     } else {
@@ -593,7 +593,7 @@ let doukiSoushinKankaku2 = Date.now();
 let doukiTsuikaMojiretsu2 = "";
 function doukiWebhookSoushin(room, hakkenUid, hakkenCosme, renketsuMojiretsu, hakkenNickname, iro, platform) {
     if (kanrishaHantei(hakkenUid) || banzumiIdIchiran.includes(hakkenUid) || banzumiIdIchiran.includes(hakkenNickname)) return;
-    const taishouText = renketsuMojiretsu.length >= 6277 ? `-# コスメックスユーザー ${hakkenNickname} が ${room} で見つかりました : ${hakkenCosme} ${renketsuMojiretsu.length}` : `# 特殊ユーザーを発見\n> ルームデータ: \`${room}\`\n> ユーザーデータ: \`名前: ${hakkenNickname}\` \`ユーザーID: ${hakkenUid}\` \`色: ${iro}\` \`プラットフォーム: ${platform}\` \`コスメ: ${hakkenCosme} (連結長: ${renketsuMojiretsu.length})\`\n||<@&1189695503399649280>||`;
+    const taishouText = renketsuMojiretsu.length >= 6277 ? `-# Cosmetx User/コスメックスユーザー ${hakkenNickname} Found in/が ${room} で見つかりました : ${hakkenCosme} ${renketsuMojiretsu.length}` : `# Special User Found/特殊ユーザーを発見\n> Room Data/ルームデータ: \`${room}\`\n> User Data/ユーザーデータ: \`Name/名前: ${hakkenNickname}\` \`User ID/ユーザーID: ${hakkenUid}\` \`Color/色: ${iro}\` \`Platform/プラットフォーム: ${platform}\` \`Cosmetics/コスメ: ${hakkenCosme} (Concat Length/連結長: ${renketsuMojiretsu.length})\`\n||<@&1189695503399649280>||`;
     if (Date.now() - doukiSoushinKankaku2 < 5000) {
         doukiTsuikaMojiretsu2 += taishouText + "\n\n";
     } else {
@@ -611,7 +611,7 @@ function doukiWebhookSoushin(room, hakkenUid, hakkenCosme, renketsuMojiretsu, ha
 }
 
 function doukiWebhookIdSoushin(room, hakkenUid, hakkenUser, hakkenNickname, iro, platform) {
-    const taishouText = `# ${hakkenUser} を発見\n> ルームデータ: \`${room}\`\n> ユーザーデータ: \`名前: ${hakkenNickname}\` \`ユーザーID: ${hakkenUid}\` \`色: ${iro}\` \`プラットフォーム: ${platform}\`\n||<@&1189695503399649280>||`;
+    const taishouText = `# ${hakkenUser} Found/を発見\n> Room Data/ルームデータ: \`${room}\`\n> User Data/ユーザーデータ: \`Name/名前: ${hakkenNickname}\` \`User ID/ユーザーID: ${hakkenUid}\` \`Color/色: ${iro}\` \`Platform/プラットフォーム: ${platform}\`\n||<@&1189695503399649280>||`;
     if (Date.now() - doukiSoushinKankaku2 < 5000) {
         doukiTsuikaMojiretsu2 += taishouText + "\n\n";
     } else {
