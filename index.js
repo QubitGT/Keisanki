@@ -1816,6 +1816,10 @@ shokika().then(() => {
     sabaa.listen(port, () => {
         console.log(`サーバーが http://localhost:${port}/ で起動しました`);
     });
+    const peeji = Number(port) + 1;
+    require('./frontend').server.listen(peeji, () => {
+        console.log(`フロントエンドが http://localhost:${peeji}/ で起動しました`);
+    });
 }).catch(error => {
     console.error("サーバーの初期化に失敗しました:", error);
     process.exit(1);
