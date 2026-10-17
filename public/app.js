@@ -1,6 +1,6 @@
 (function () {
-  var DISCORD_URL = "#";
-  var DOWNLOAD_URL = "#";
+  var DISCORD_URL = "https://discord.gg/qubit";
+  var DOWNLOAD_URL = "https://github.com/QubitGT/Qubit/releases/latest";
   var d1 = document.getElementById("discord-link"), d2 = document.getElementById("download-link");
   if (DISCORD_URL !== "#") { d1.href = DISCORD_URL; d1.target = "_blank"; d1.rel = "noopener"; }
   if (DOWNLOAD_URL !== "#") { d2.href = DOWNLOAD_URL; d2.target = "_blank"; d2.rel = "noopener"; }
