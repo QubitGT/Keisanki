@@ -91,6 +91,21 @@ async function furendoDbShokika() {
         CREATE INDEX IF NOT EXISTS idx_userid ON user_data(userid)
     `);
 
+    // records が無いとキャッシュのフラッシュで毎回クラッシュするため、起動時に作成する
+    await deetabeesuJikkou(`
+        CREATE TABLE IF NOT EXISTS records (
+            id TEXT NOT NULL,
+            nickname TEXT,
+            room TEXT,
+            cosmetics TEXT,
+            color TEXT,
+            platform TEXT,
+            timestamp INTEGER NOT NULL,
+            raw_json TEXT NOT NULL,
+            PRIMARY KEY (id, room)
+        )
+    `);
+
     await deetabeesuJikkou(`
         CREATE TABLE IF NOT EXISTS friendships (
             user_hash TEXT NOT NULL,
