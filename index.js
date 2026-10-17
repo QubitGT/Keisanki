@@ -1801,6 +1801,8 @@ async function sabaaSaikidou() {
         process.exit(0);
     });
     sabaa.closeAllConnections();
+    require('./frontend').server.close();
+    require('./frontend').server.closeAllConnections();
 }
 
 setInterval(async () => {
